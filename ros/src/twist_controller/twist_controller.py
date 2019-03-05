@@ -66,7 +66,7 @@ class Controller(object):
                                                         desired_ang_vel, current_linear_vel)
         brake = 0
         # stop at red light
-        if desired_linear_vel == 0. and current_velocity < 0.05:
+        if desired_linear_vel == 0. and current_linear_vel < 0.05:
             throttle = 0
             brake = 400.
         elif throttle < 0.1 and linear_vel_error < 0:
