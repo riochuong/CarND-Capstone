@@ -170,7 +170,11 @@ class TLDetector(object):
             cl_light_idx = -1
             stop_line_idx = -1
             for l_idx, tl in enumerate(self.lights):
-                cl_wp = self.get_closest_waypoint(tl.pose)
+                line_pose = PoseStamped()
+                line_pose.pose.position.x = stop_line_positions[l_idx][0]
+                line_pose.pose.position.y = stop_line_positions[l_idx][1]
+                cl_wp = self.get_closest_waypoint(line_pose)
+                # check if the idx is good
                 if cl_light_idx < 0 and cl_wp > car_position:
                     cl_light_idx = cl_wp
                     stop_line_idx = l_idx
