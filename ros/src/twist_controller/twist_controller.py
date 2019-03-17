@@ -59,7 +59,7 @@ class Controller(object):
         desired_linear_vel = np.sqrt(desired_vx**2 + desired_vy**2)
         current_linear_vel = np.sqrt(current_vx**2 + current_vy**2)
         # filter current velocity
-        rospy.logwarn("Desire Vel %.2f" % desired_linear_vel)
+        #rospy.logwarn("Desire Vel %.2f" % desired_linear_vel)
         #current_linear_vel = self._vel_filter.filt(current_linear_vel)
         linear_vel_error = desired_linear_vel - current_linear_vel
         throttle = self.throttle_controller.step(linear_vel_error, delta_time)
@@ -68,7 +68,7 @@ class Controller(object):
         brake = 0
         # stop at red light
         if desired_linear_vel == 0. and current_linear_vel < 0.05:
-            rospy.logwarn("Apply Break")
+            #rospy.logwarn("Apply Break")
             throttle = 0
             brake = 400.
         elif throttle < 0.1 and linear_vel_error < 0:

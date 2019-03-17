@@ -71,23 +71,22 @@ class WaypointUpdater(object):
                 # find the nearest neighborhood that after pose
                 closest_wp_idx = self.get_closest_waypoint_idx(self.current_pose.pose)
                 publish_waypoints = self.base_waypoints.waypoints[closest_wp_idx:closest_wp_idx + LOOKAHEAD_WPS]
-                rospy.logwarn("Current light idx: %d" % self._current_light_idx)
+                #rospy.logwarn("Current light idx: %d" % self._current_light_idx)
                 if (current_light_idx >= 0) and (current_light_idx >= closest_wp_idx) \
                         and ((current_light_idx - closest_wp_idx) < len(publish_waypoints)):
                     # slow down now
-                    rospy.logwarn("TRAFFIC LIGHT IS RED NEARBY")
+                    #rospy.logwarn("TRAFFIC LIGHT IS RED NEARBY")
                     wp_pose = self.base_waypoints.waypoints[closest_wp_idx]
                     adjust_publish_waypoints = []
                     for i, wp in enumerate(publish_waypoints):
                         p = Waypoint()
                         p.pose = wp.pose
-                        rospy.logwarn("i %d light_idx %d" % (i,current_light_idx - closest_wp_idx))
                         d = self.distance(publish_waypoints, current_light_idx - closest_wp_idx, i)
                         # d will decrease as the index increase
                         # fine tune the const to acheive smooth slow down
                         v = 0.2 * 7 * d
                         # make sure we take the min velocity
-                        rospy.logwarn("%.2f" % v)
+                        #rospy.logwarn("%.2f" % v)
                         p.twist.twist.linear.x = min(v, wp.twist.twist.linear.x)
                         adjust_publish_waypoints.append(p)
                     # point the publish waypoints to correct array

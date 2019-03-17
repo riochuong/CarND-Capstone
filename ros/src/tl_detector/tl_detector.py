@@ -13,7 +13,8 @@ import cv2
 import yaml
 from scipy.spatial import KDTree
 
-STATE_COUNT_THRESHOLD = 3
+STATE_COUNT_THRESHOLD = 1
+MODEL_INFERENCE = "model_inference/frozen_inference_graph.pb"
 
 class TLDetector(object):
     def __init__(self):
@@ -44,14 +45,14 @@ class TLDetector(object):
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
 
         self.bridge = CvBridge()
-        self.light_classifier = TLClassifier()
+        self.light_classifier = TLClassifier(MODEL_INFERENCE)
         self.listener = tf.TransformListener()
 
         self.state = TrafficLight.UNKNOWN
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
-
+        self.image_counter = 0
         rospy.spin()
 
     def pose_cb(self, msg):
@@ -79,16 +80,20 @@ class TLDetector(object):
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
-
+        self.image_counter += 1
+#        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+#        cv2.imwrite("test/img_%d.png" % self.image_counter, cv_image)
+        #cv2.imwrite("./red_light/red_%d.jpg" % self.image_counter, cv_image)
+        #rospy.logwarn(cv_image)
         '''
         Publish upcoming red lights at camera frequency.
         Each predicted state has to occur `STATE_COUNT_THRESHOLD` number
         of times till we start using it. Otherwise the previous stable state is
         used.
         '''
-        print("Process traffic lights")
-        print (self.state)
-        print("\n\n")
+        #print("Process traffic lights")
+        #print (self.state)
+        #print("\n\n")
         if self.state != state:
             self.state_count = 0
             self.state = state
@@ -139,15 +144,15 @@ class TLDetector(object):
 
         """
         # ONLY USE FOR SIMULATION NOW
-        return light.state
-#        if(not self.has_image):
-#            self.prev_light_loc = None
-#            return False
+#        return light.state
+        if(not self.has_image):
+            self.prev_light_loc = None
+            return TrafficLight.UNKNOWN
 
-#        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
         #Get classification
-#        return self.light_classifier.get_classification(cv_image)
+        return self.light_classifier.get_classification(cv_image)
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
@@ -188,6 +193,7 @@ class TLDetector(object):
 
         if light:
             state = self.get_light_state(light)
+            rospy.logwarn("LIGHT STATE %d " % state)
             return light_wp, state
         self.waypoints = None
         return -1, TrafficLight.UNKNOWN
